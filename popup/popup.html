@@ -3,56 +3,36 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MapMiner</title>
-    <link rel="stylesheet" type="text/css" href="../popup/popup.css" />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
-    />
-    <script src="../popup/popup.js"></script>
+    <title>Element Detective UI</title>
+    <link rel="stylesheet" href="popup.css" />
   </head>
   <body>
     <div class="container">
-      <header>
-        <div class="logo">
-          <img src="/icons/icon128.png" />
-          <span id="title">MapsMiner</span>
+      <div class="header">
+        <span class="title">Element Detective</span>
+      </div>
+      <div class="tabs">
+        <button class="active" id="homeTab">🏠 Home</button>
+        <button id="propertiesTab">📋 Properties</button>
+      </div>
+      <div class="content" id="contentArea">
+        <!-- Content will be loaded dynamically here -->
+         <!-- home -->
+         <div class="tab-content" id="homeContent">
+          <h3>Ready to Inspect</h3>
+          <p>Click the button below to start analyzing any element on the page</p>
+          <button>Start Inspecting</button>
         </div>
-        <nav>
-          <ul>
-            <li>
-              <a href="popup.html" class="active"><i class="fa fa-home"></i></a>
-            </li>
-            <!-- Active state added here -->
-            <li>
-              <a href="help.html"><i class="fa fa-question-circle"></i></a>
-            </li>
-            <li>
-              <a href="settings.html"><i class="fa fa-cog"></i></a>
-            </li>
-            <li>
-              <a href="premium.html"><i class="fa-solid fa-crown"></i></a>
-            </li>
-          </ul>
-        </nav>
-      </header>
+        
 
-      <main>
-        <div class="button-container">
-          <button class="btn-google-maps" id="openMapBtn">
-            <i class="fa fa-map-marker-alt"></i> Open Google Maps
-          </button>
+        <!-- properties -->
+        <div class="tab-content" id="propertiesContent">
+          <p>Select/unselect options by clicking:</p>
+          <div id="optionsContainer"></div>
         </div>
-        <div class="button-container">
-          <button class="btn-tutorial" id="tutorialBtn">
-            <i class="fa fa-video"></i> How to use MapsMiner
-          </button>
-        </div>
-      </main>
-
-      <footer>
-        <p>Powered by <a href="#">MapsMiner</a></p>
-      </footer>
     </div>
+
+    <!-- Include the external JavaScript file -->
+    <script src="popup.js"></script>
   </body>
 </html>
