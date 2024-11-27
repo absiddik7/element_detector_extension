@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MapMiner</title>
+    <link rel="stylesheet" type="text/css" href="../popup/popup.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div class="logo">
+          <img src="/icons/icon128.png" />
+          <span id="title">MapsMiner</span>
+        </div>
+        <nav>
+          <ul>
+            <li>
+              <a href="popup.html"><i class="fa fa-home"></i></a>
+            </li>
+            <!-- Active state added here -->
+            <li>
+              <a href="help.html"><i class="fa fa-question-circle"></i></a>
+            </li>
+            <li>
+              <a href="settings.html"><i class="fa fa-cog"></i></a>
+            </li>
+            <li>
+              <a href="premium.html" class="active"
+                ><i class="fa fa-crown"></i
+              ></a>
+            </li>
+          </ul>
+        </nav>
+      </header>
+      <div class="pricing-container">
+        <!-- Comparison Table -->
+        <table class="pricing-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Free</th>
+              <th>Pro</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Max leads generation</td>
+              <td><strong>30</strong></td>
+              <td><strong>Unlimited</strong></td>
+            </tr>
+            <tr>
+              <td>Custom export setting</td>
+              <td>&#10004;</td>
+              <td>&#10004;</td>
+            </tr>
+            <tr>
+              <td>Extract basic information</td>
+              <td>&#10004;</td>
+              <td>&#10004;</td>
+            </tr>
+            <tr>
+              <td>Extract phone number</td>
+              <td>&#10004;</td>
+              <td>&#10004;</td>
+            </tr>
+            <tr>
+              <td>Extract email, social medias and more</td>
+              <td>&#10008;</td>
+              <td>&#10004;</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Pricing Options -->
+        <div class="pricing-options">
+          <div class="pricing-box">
+            <h3>Monthly</h3>
+            <p><span>$19</span>/mo</p>
+            <p class="billing">Billed monthly</p>
+            <button class="btn-get-started">Get Started</button>
+          </div>
+          <div class="pricing-box">
+            <h3>Yearly</h3>
+            <p><span>$12</span>/mo</p>
+            <p class="billing">$144 billed yearly</p>
+            <button class="btn-get-started">Get Started</button>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <p>Powered by <a href="#">MapMiner</a></p>
+      </footer>
+    </div>
+  </body>
+</html>

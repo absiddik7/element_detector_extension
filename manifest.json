@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "Element Path Finder",
+  "version": "1.0",
+  "description": "Get multiple selector paths for any element with visual breadcrumbs",
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
+  "action": {
+    "default_title": "Element Path Finder"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [{
+    "matches": ["<all_urls>"],
+    "js": ["content.js"]
+  }]
+}
