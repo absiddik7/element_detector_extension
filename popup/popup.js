@@ -30,15 +30,45 @@ document.addEventListener("DOMContentLoaded", function () {
   switchTab("home");
 
   // Add event listener to the Start Inspecting button
-  const startInspectingButton = document.querySelector("#homeContent button");
+  const startInspectingButton = document.getElementById("startInspection");
+
+  // Check if chrome.storage is available
+  const storage = chrome.storage?.local;
+
+  if (!storage) {
+    console.error(
+      "chrome.storage.local is undefined. Ensure the 'storage' permission is set in manifest.json."
+    );
+    return;
+  }
+
+  // Load inspection state on popup load
+  storage.get("isInspecting", ({ isInspecting }) => {
+    // Update the button text based on the inspection state
+    startInspectingButton.textContent = isInspecting
+      ? "Stop Inspecting"
+      : "Start Inspecting";
+
+    // Update the button color
+    startInspectingButton.style.backgroundColor = isInspecting
+      ? "#ff0000"
+      : "#4e86ff";
+  });
+
+  // Toggle inspection state
   startInspectingButton.addEventListener("click", () => {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs[0]) {
-        chrome.tabs.sendMessage(
-          tabs[0].id,
-          { action: "toggle" },
-          (response) => {
+    storage.get("isInspecting", ({ isInspecting }) => {
+      const newState = !isInspecting; // Toggle state
+
+      // Update the inspection state in storage
+      storage.set({ isInspecting: newState });
+
+      // Send a message to the content script to toggle inspection
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs[0]) {
+          chrome.tabs.sendMessage(tabs[0].id, { action: "toggle" }, () => {
             if (chrome.runtime.lastError) {
+              // If content script isn't injected, inject it first
               chrome.scripting.executeScript(
                 {
                   target: { tabId: tabs[0].id },
@@ -49,10 +79,17 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
               );
             }
-            window.close(); // Close popup after sending message
-          }
-        );
-      }
+          });
+        }
+      });
+
+      // Update the button text
+      startInspectingButton.textContent = newState
+        ? "Stop Inspecting"
+        : "Start Inspecting";
+
+      // Close the popup (optional)
+      window.close();
     });
   });
 });
