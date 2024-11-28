@@ -1,3 +1,5 @@
+//popup.js
+// Switch between tabs
 document.addEventListener("DOMContentLoaded", function () {
   const homeTab = document.getElementById("homeTab");
   const propertiesTab = document.getElementById("propertiesTab");
@@ -26,18 +28,39 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Load the default tab (Home) on page load
   switchTab("home");
+
+  // Add event listener to the Start Inspecting button
+  const startInspectingButton = document.querySelector("#homeContent button");
+  startInspectingButton.addEventListener("click", () => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]) {
+        chrome.tabs.sendMessage(
+          tabs[0].id,
+          { action: "toggle" },
+          (response) => {
+            if (chrome.runtime.lastError) {
+              chrome.scripting.executeScript(
+                {
+                  target: { tabId: tabs[0].id },
+                  files: ["content.js"],
+                },
+                () => {
+                  chrome.tabs.sendMessage(tabs[0].id, { action: "toggle" });
+                }
+              );
+            }
+            window.close(); // Close popup after sending message
+          }
+        );
+      }
+    });
+  });
 });
 
+// Properties tab options
 document.addEventListener("DOMContentLoaded", () => {
   // List of options
-  const options = [
-    'id',
-    'className',
-    'name',
-    'tagName',
-    'XPath',
-    'JS Path',
-  ];
+  const options = ["id", "className", "name", "tagName", "XPath", "JS Path"];
 
   // Object to keep track of selected/unselected states
   const optionStates = options.reduce((acc, option) => {
