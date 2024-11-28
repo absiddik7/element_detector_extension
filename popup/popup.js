@@ -31,26 +31,12 @@ document.addEventListener("DOMContentLoaded", function () {
 document.addEventListener("DOMContentLoaded", () => {
   // List of options
   const options = [
-    "Name",
-    "Fulladdress",
-    "Street",
-    "Municipality",
-    "Categories",
-    "Phone",
-    "Phones",
-    "Claimed",
-    "Review Count",
-    "Average Rating",
-    "Review URL",
-    "Google Maps URL",
-    "Latitude",
-    "Longitude",
-    "Website",
-    "Domain",
-    "Opening hours",
-    "Featured image",
-    "Cid",
-    "Place Id",
+    'id',
+    'className',
+    'name',
+    'tagName',
+    'XPath',
+    'JS Path',
   ];
 
   // Object to keep track of selected/unselected states
@@ -86,13 +72,5 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     optionsContainer.appendChild(button); // Add button to DOM
-  });
-
-  // Example: Save button for debugging/logging selected options
-  document.getElementById("saveButton").addEventListener("click", () => {
-    const selectedOptions = Object.keys(optionStates).filter(
-      (key) => optionStates[key]
-    );
-    console.log("Selected Options:", selectedOptions);
   });
 });
