@@ -116,31 +116,17 @@
     popup.id = "pathfinder-popup";
     popup.style.cssText = `
         position: fixed;
-        background: white;
-        border: 1px solid #ccc;
-        padding: 15px;
-        border-radius: 5px;
+        border-radius: 8px;
         box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         z-index: 10000;
         display: none;
-        max-width: 500px;
+        min-width: 400px;
+        max-width: 400px;
         font-family: monospace;
         font-size: 12px;
     `;
     document.body.appendChild(popup);
     return popup;
-  }
-
-  // Element Functions
-  function getElementPreview(element) {
-    if (!element) return "";
-    let preview = element.tagName.toLowerCase();
-    if (element.id) preview += `#${element.id}`;
-    if (element.className) {
-      const classes = Array.from(element.classList).join(".");
-      if (classes) preview += `.${classes}`;
-    }
-    return preview;
   }
 
   function updateBreadcrumbTrail(element) {
@@ -149,59 +135,11 @@
     const path = [];
     let current = element;
 
-    while (current && current.tagName && current !== document.body) {
-      path.unshift(getElementPreview(current));
-      current = current.parentElement;
-    }
-
     breadcrumbTrail.textContent = path.join(" → ");
     breadcrumbTrail.style.display = "block";
 
     const rect = element.getBoundingClientRect();
     breadcrumbTrail.style.top = `${rect.top + window.scrollY - 30}px`;
-  }
-
-  // Clipboard Functions
-  function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(() => {
-      const feedback = document.createElement("div");
-      feedback.textContent = "Copied!";
-      feedback.style.cssText = `
-            position: fixed;
-            background: #4CAF50;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 3px;
-            font-size: 12px;
-            z-index: 10001;
-            pointer-events: none;
-        `;
-      document.body.appendChild(feedback);
-
-      const rect = event.target.getBoundingClientRect();
-      feedback.style.left = `${rect.left}px`;
-      feedback.style.top = `${rect.top - 30}px`;
-
-      setTimeout(() => feedback.remove(), 1000);
-    });
-  }
-
-  function createCopyButton(text, label) {
-    const button = document.createElement("button");
-    button.textContent = `Copy ${label}`;
-    button.style.cssText = `
-        background: #f0f0f0;
-        border: 1px solid #ccc;
-        padding: 4px 8px;
-        border-radius: 3px;
-        cursor: pointer;
-        font-size: 11px;
-    `;
-    button.onclick = (e) => {
-      e.stopPropagation();
-      copyToClipboard(text);
-    };
-    return button;
   }
 
   // Popup Management
@@ -227,43 +165,43 @@
 
     popup.innerHTML = `
     <div style="background: #333; padding: 16px; border-radius: 8px; height: 400px; display: flex; flex-direction: column;">
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-    <div style="font-size: 16px; font-weight: bold; color: #fff;">Element Detective</div>
-    <div style="display: flex; gap: 8px;">
-      <button style="background: none; border: none; cursor: pointer;">
-        <img src="pin-icon.svg" alt="Pin" style="width: 16px; height: 16px; filter: invert(1);">
-      </button>
-      <button style="background: none; border: none; cursor: pointer;" onclick="hidePopup()">
-        <img src="close-icon.svg" alt="Close" style="width: 16px; height: 16px; filter: invert(1);">
-      </button>
-    </div>
-  </div>
-
-  <div style="margin-bottom: 16px;">
-    <input type="text" placeholder="Select an element or search..." style="width: 100%; padding: 8px; border: 1px solid #444; border-radius: 4px; background: #222; color: #fff; font-size: 14px;">
-  </div>
-
-  <div style="flex: 1; overflow-y: auto;">
-    ${properties
-      .map(
-        (prop) => `
-        <div style="background: #222; padding: 12px; border-radius: 4px; margin-bottom: 12px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <div style="font-size: 14px; font-weight: bold; color: #ccc;">${prop.label}</div>
-            <button style="background: none; border: none; cursor: pointer;">
-              <img src="copy-icon.svg" alt="Copy" style="width: 16px; height: 16px; filter: invert(1);" onclick="navigator.clipboard.writeText('${prop.value}')">
-            </button>
-          </div>
-          <div style="font-size: 14px; color: #fff; padding: 4px 8px; border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-            ${prop.value}
-          </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div style="font-size: 16px; font-weight: bold; color: #fff;">Element Detective</div>
+            <div style="display: flex; gap: 8px;">
+                <button style="background: none; border: none; cursor: pointer;">
+                    <img src="../icons/pin-icon.svg" alt="Pin" style="width: 16px; height: 16px; filter: invert(1);">
+                </button>
+                <button style="background: none; border: none; cursor: pointer;" onclick="hidePopup()">
+                    <img src="icons/close-icon.svg" alt="Close" style="width: 16px; height: 16px; filter: invert(1);">
+                </button>
+            </div>
         </div>
-      `
-      )
-      .join("")}
-  </div>
-</div>
-  `;
+
+        <div style="margin-bottom: 16px;" >
+            <input type="text" placeholder="Select an element or search..." style="width: 100%; padding: 8px; border: 1px solid #444; border-radius: 4px; background: #222; color: #fff; font-size: 14px;">
+        </div>
+
+        <div style="flex: 1; overflow-y: auto;">
+            ${properties
+              .map(
+                (prop) => `
+                    <div style="background: #222; padding: 12px; border-radius: 4px; margin-bottom: 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <div style="font-size: 14px; font-weight: bold; color: #ccc;">${prop.label}</div>
+                            <button style="background: none; border: none; cursor: pointer;">
+                                <img src="/icons/copy-icon.svg" alt="Copy" style="width: 16px; height: 16px; filter: invert(1);" onclick="navigator.clipboard.writeText('${prop.value}')">
+                            </button>
+                        </div>
+                        <div style="font-size: 14px; color: #fff; padding: 4px 8px; border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            ${prop.value}
+                        </div>
+                    </div>
+                `
+              )
+              .join("")}
+        </div>
+    </div>
+`;
 
     // Position the popup
     const rect = element.getBoundingClientRect();
@@ -291,33 +229,16 @@
     popup.style.display = "none";
   }
 
-  // Example modifications to `createCopyButton` for styling uniformity
-  function createCopyButton(text, label) {
-    const button = document.createElement("button");
-    button.textContent = `Copy ${label}`;
-    button.style.cssText = `
-      background: #f0f0f0;
-      border: 1px solid #ccc;
-      padding: 4px 8px;
-      border-radius: 3px;
-      cursor: pointer;
-      font-size: 11px;
-      transition: background 0.2s ease;
-  `;
-    button.onmouseover = () => (button.style.background = "#e0e0e0");
-    button.onmouseout = () => (button.style.background = "#f0f0f0");
-    button.onclick = (e) => {
-      e.stopPropagation();
-      copyToClipboard(text);
-    };
-    return button;
-  }
-
   // Event Handlers
   function handleMouseMove(e) {
     if (!isActive) return;
 
     const element = document.elementFromPoint(e.clientX, e.clientY);
+    const popup = document.getElementById("pathfinder-popup");
+
+    // Ignore highlighting the popup itself
+    if (popup && popup.contains(element)) return;
+
     if (element === highlightedElement) return;
 
     if (highlightedElement) {
@@ -326,13 +247,19 @@
 
     highlightedElement = element;
     if (highlightedElement && highlightedElement !== document.body) {
-      highlightedElement.style.outline = "2px solid #007bff";
+      highlightedElement.style.outline = "2px dashed orange"; // Set to dashed orange border
       updateBreadcrumbTrail(highlightedElement);
     }
   }
 
   function handleClick(e) {
     if (!isActive) return;
+
+    const popup = document.getElementById("pathfinder-popup");
+
+    // Prevent interaction with the popup
+    if (popup && popup.contains(e.target)) return;
+
     e.preventDefault();
     e.stopPropagation();
 
