@@ -42,29 +42,40 @@ document.addEventListener("DOMContentLoaded", function () {
     return;
   }
 
-  // Load inspection state on popup load
-  storage.get("isInspecting", ({ isInspecting }) => {
-    // Update the button text based on the inspection state
-    startInspectingButton.textContent = isInspecting
-      ? "Stop Inspecting"
-      : "Start Inspecting";
+  // Load inspection state for the current tab on popup load
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    const currentTabId = tabs[0].id;
+    const tabSpecificKey = `isInspecting_${currentTabId}`;
 
-    // Update the button color
-    startInspectingButton.style.backgroundColor = isInspecting
-      ? "#ff0000"
-      : "#4e86ff";
+    storage.get(tabSpecificKey, (data) => {
+      const isInspecting = data[tabSpecificKey] || false;
+
+      // Update the button text based on the inspection state
+      startInspectingButton.textContent = isInspecting
+        ? "Stop Inspecting"
+        : "Start Inspecting";
+
+      // Update the button color
+      startInspectingButton.style.backgroundColor = isInspecting
+        ? "#ff0000"
+        : "#4e86ff";
+    });
   });
 
   // Toggle inspection state
   startInspectingButton.addEventListener("click", () => {
-    storage.get("isInspecting", ({ isInspecting }) => {
-      const newState = !isInspecting; // Toggle state
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const currentTabId = tabs[0].id;
+      const tabSpecificKey = `isInspecting_${currentTabId}`;
 
-      // Update the inspection state in storage
-      storage.set({ isInspecting: newState });
+      storage.get(tabSpecificKey, (data) => {
+        const currentState = data[tabSpecificKey] || false;
+        const newState = !currentState; // Toggle state
 
-      // Send a message to the content script to toggle inspection
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        // Update the tab-specific inspection state in storage
+        storage.set({ [tabSpecificKey]: newState });
+
+        // Send a message to the content script to toggle inspection
         if (tabs[0]) {
           chrome.tabs.sendMessage(tabs[0].id, { action: "toggle" }, () => {
             if (chrome.runtime.lastError) {
@@ -81,15 +92,20 @@ document.addEventListener("DOMContentLoaded", function () {
             }
           });
         }
+
+        // Update the button text
+        startInspectingButton.textContent = newState
+          ? "Stop Inspecting"
+          : "Start Inspecting";
+
+        // Update button color
+        startInspectingButton.style.backgroundColor = newState
+          ? "#ff0000"
+          : "#4e86ff";
+
+        // Close the popup (optional)
+        window.close();
       });
-
-      // Update the button text
-      startInspectingButton.textContent = newState
-        ? "Stop Inspecting"
-        : "Start Inspecting";
-
-      // Close the popup (optional)
-      window.close();
     });
   });
 });
