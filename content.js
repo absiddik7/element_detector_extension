@@ -144,7 +144,7 @@
 
   // Popup Management
   // Updated `showResultsPopup` function
-  function showResultsPopup(element, x, y) {
+  function showResultsPopup(element) {
     const popup = document.getElementById("pathfinder-popup");
     const cssSelector = getCSSSelector(element);
     const xpath = getXPath(element);
@@ -164,63 +164,134 @@
     ];
 
     popup.innerHTML = `
-    <div style="background: #333; padding: 16px; border-radius: 8px; height: 400px; display: flex; flex-direction: column;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <div style="font-size: 16px; font-weight: bold; color: #fff;">Element Detective</div>
-            <div style="display: flex; gap: 8px;">
-                <button style="background: none; border: none; cursor: pointer;">
-                    <img src="../icons/pin-icon.svg" alt="Pin" style="width: 16px; height: 16px; filter: invert(1);">
-                </button>
-                <button style="background: none; border: none; cursor: pointer;" onclick="hidePopup()">
-                    <img src="icons/close-icon.svg" alt="Close" style="width: 16px; height: 16px; filter: invert(1);">
-                </button>
-            </div>
-        </div>
+      <div id="pathfinder-popup-content" style="
+        background: #333; 
+        padding: 16px; 
+        border-radius: 8px; 
+        height: 400px; 
+        display: flex; 
+        flex-direction: column; 
+        cursor: move;
+      ">
+          <div id="pathfinder-popup-header" style="
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 12px; 
+            cursor: grab;
+          ">
+              <div style="font-size: 16px; font-weight: bold; color: #fff;">Element Detective</div>
+              <div style="display: flex; gap: 8px;">
+                  <button id="pin-button" style="background: none; border: none; cursor: pointer;">
+                      <img src="../icons/pin-icon.svg" alt="Pin" style="width: 16px; height: 16px; filter: invert(1);">
+                  </button>
+                  <button id="close-button" style="background: none; border: none; cursor: pointer;">
+                      <img src="icons/close-icon.svg" alt="Close" style="width: 16px; height: 16px; filter: invert(1);">
+                  </button>
+              </div>
+          </div>
+  
+          <div style="margin-bottom: 16px;">
+              <input type="text" placeholder="Select an element or search..." style="
+                width: 100%; 
+                padding: 8px; 
+                border: 1px solid #444; 
+                border-radius: 4px; 
+                background: #222; 
+                color: #fff; 
+                font-size: 14px;
+              ">
+          </div>
+  
+          <div style="flex: 1; overflow-y: auto;">
+              ${properties
+                .map(
+                  (prop) => `
+                  <div style="background: #222; padding: 12px; border-radius: 4px; margin-bottom: 12px;">
+                      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                          <div style="font-size: 14px; font-weight: bold; color: #ccc;">${prop.label}</div>
+                          <button style="background: none; border: none; cursor: pointer;" onclick="navigator.clipboard.writeText('${prop.value}')">
+                              <img src="/icons/copy-icon.svg" alt="Copy" style="width: 16px; height: 16px; filter: invert(1);">
+                          </button>
+                      </div>
+                      <div style="
+                        font-size: 14px; 
+                        color: #fff; 
+                        padding: 4px 8px; 
+                        border-radius: 4px; 
+                        white-space: nowrap; 
+                        overflow: hidden; 
+                        text-overflow: ellipsis;
+                      ">
+                          ${prop.value}
+                      </div>
+                  </div>
+              `
+                )
+                .join("")}
+          </div>
+      </div>
+    `;
 
-        <div style="margin-bottom: 16px;" >
-            <input type="text" placeholder="Select an element or search..." style="width: 100%; padding: 8px; border: 1px solid #444; border-radius: 4px; background: #222; color: #fff; font-size: 14px;">
-        </div>
-
-        <div style="flex: 1; overflow-y: auto;">
-            ${properties
-              .map(
-                (prop) => `
-                    <div style="background: #222; padding: 12px; border-radius: 4px; margin-bottom: 12px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                            <div style="font-size: 14px; font-weight: bold; color: #ccc;">${prop.label}</div>
-                            <button style="background: none; border: none; cursor: pointer;">
-                                <img src="/icons/copy-icon.svg" alt="Copy" style="width: 16px; height: 16px; filter: invert(1);" onclick="navigator.clipboard.writeText('${prop.value}')">
-                            </button>
-                        </div>
-                        <div style="font-size: 14px; color: #fff; padding: 4px 8px; border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                            ${prop.value}
-                        </div>
-                    </div>
-                `
-              )
-              .join("")}
-        </div>
-    </div>
-`;
-
-    // Position the popup
-    const rect = element.getBoundingClientRect();
-    const popupRect = popup.getBoundingClientRect();
-
-    let left = x + 10;
-    let top = y + 10;
-
-    if (left + popupRect.width > window.innerWidth) {
-      left = window.innerWidth - popupRect.width - 10;
-    }
-
-    if (top + popupRect.height > window.innerHeight) {
-      top = window.innerHeight - popupRect.height - 10;
-    }
-
-    popup.style.left = `${left}px`;
-    popup.style.top = `${top}px`;
+    // Position popup in top-right corner
+    popup.style.position = "fixed";
+    popup.style.top = "10px";
+    popup.style.right = "10px";
     popup.style.display = "block";
+
+    // Draggability functionality
+    const popupContent = document.getElementById("pathfinder-popup-content");
+    const popupHeader = document.getElementById("pathfinder-popup-header");
+    let isDragging = false;
+    let currentX;
+    let currentY;
+    let initialX;
+    let initialY;
+    let xOffset = 0;
+    let yOffset = 0;
+
+    popupHeader.addEventListener("mousedown", dragStart);
+    document.addEventListener("mouseup", dragEnd);
+    document.addEventListener("mousemove", drag);
+
+    function dragStart(e) {
+      initialX = e.clientX - xOffset;
+      initialY = e.clientY - yOffset;
+      popupHeader.style.cursor = "grabbing";
+
+      if (e.target === popupHeader) {
+        isDragging = true;
+      }
+    }
+
+    function dragEnd(e) {
+      initialX = currentX;
+      initialY = currentY;
+      popupHeader.style.cursor = "grab";
+      isDragging = false;
+    }
+
+    function drag(e) {
+      if (isDragging) {
+        e.preventDefault();
+        currentX = e.clientX - initialX;
+        currentY = e.clientY - initialY;
+
+        xOffset = currentX;
+        yOffset = currentY;
+
+        setTranslate(currentX, currentY, popup);
+      }
+    }
+
+    function setTranslate(xPos, yPos, el) {
+      el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
+    }
+
+    // Event listeners for buttons
+    document.getElementById("close-button").addEventListener("click", () => {
+      popup.style.display = "none";
+    });
   }
 
   // Function to hide the popup
