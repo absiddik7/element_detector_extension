@@ -84,7 +84,7 @@
         : [...segs(elm.parentNode), `${elm.tagName}[${idx(elm)}]`];
     return segs(element).join("/").toLowerCase();
   }
-
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////
   // UI Components
   function createBreadcrumbTrail() {
     const trail = document.createElement("div");
@@ -289,7 +289,28 @@
     }
 
     // Event listeners for buttons
+    // Event listeners for buttons
     document.getElementById("close-button").addEventListener("click", () => {
+      // Stop the inspection
+      isActive = false;
+
+      // Remove event listeners
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("click", handleClick, true);
+      document.removeEventListener("click", handleClickOutside);
+
+      // Reset styles
+      document.body.style.cursor = "";
+      if (highlightedElement) {
+        highlightedElement.style.outline = "";
+        highlightedElement = null;
+      }
+      if (breadcrumbTrail) {
+        breadcrumbTrail.style.display = "none";
+      }
+
+      // Hide the popup
+      const popup = document.getElementById("pathfinder-popup");
       popup.style.display = "none";
     });
   }
