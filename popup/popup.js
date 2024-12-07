@@ -44,70 +44,111 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Load inspection state for the current tab on popup load
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    if (tabs.length === 0) return;
+
     const currentTabId = tabs[0].id;
     const tabSpecificKey = `isInspecting_${currentTabId}`;
 
-    storage.get(tabSpecificKey, (data) => {
+    // Fetch and update the button state when the popup loads
+    chrome.storage.local.get(["isActive", tabSpecificKey], (data) => {
+      const isActive = data.isActive || false;
       const isInspecting = data[tabSpecificKey] || false;
 
-      // Update the button text based on the inspection state
-      startInspectingButton.textContent = isInspecting
-        ? "Stop Inspecting"
-        : "Start Inspecting";
+      // Synchronize states
+      const syncedState = isActive ? isInspecting : false;
 
-      // Update the button color
-      startInspectingButton.style.backgroundColor = isInspecting
-        ? "#ff0000"
-        : "#4e86ff";
+      // Fix any inconsistency in storage
+      if (!isActive && isInspecting) {
+        chrome.storage.local.set({ [tabSpecificKey]: false });
+      }
+
+      // Update the button UI
+      updateButtonState(startInspectingButton, syncedState);
+
+      console.log("Popup loaded. Current state:", {
+        isActive,
+        isInspecting: syncedState,
+      });
     });
   });
+
 
   // Toggle inspection state
   startInspectingButton.addEventListener("click", () => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs.length === 0) return;
+
       const currentTabId = tabs[0].id;
       const tabSpecificKey = `isInspecting_${currentTabId}`;
 
-      storage.get(tabSpecificKey, (data) => {
+      chrome.storage.local.get(tabSpecificKey, (data) => {
         const currentState = data[tabSpecificKey] || false;
         const newState = !currentState; // Toggle state
 
         // Update the tab-specific inspection state in storage
-        storage.set({ [tabSpecificKey]: newState });
-
-        // Send a message to the content script to toggle inspection
-        if (tabs[0]) {
-          chrome.tabs.sendMessage(tabs[0].id, { action: "toggle" }, () => {
-            if (chrome.runtime.lastError) {
-              // If content script isn't injected, inject it first
-              chrome.scripting.executeScript(
-                {
-                  target: { tabId: tabs[0].id },
-                  files: ["content.js"],
-                },
-                () => {
-                  chrome.tabs.sendMessage(tabs[0].id, { action: "toggle" });
-                }
-              );
+        chrome.storage.local.set({ [tabSpecificKey]: newState }, () => {
+          // Send a message to the content script to toggle inspection
+          chrome.tabs.sendMessage(
+            currentTabId,
+            { action: "toggle", newState },
+            () => {
+              if (chrome.runtime.lastError) {
+                // If content script isn't injected, inject it first
+                chrome.scripting.executeScript(
+                  {
+                    target: { tabId: currentTabId },
+                    files: ["content.js"],
+                  },
+                  () => {
+                    chrome.tabs.sendMessage(currentTabId, {
+                      action: "toggle",
+                      newState,
+                    });
+                  }
+                );
+              }
             }
-          });
-        }
+          );
 
-        // Update the button text
-        startInspectingButton.textContent = newState
-          ? "Stop Inspecting"
-          : "Start Inspecting";
+          // Update the button text and color
+          updateButtonState(startInspectingButton, newState);
 
-        // Update button color
-        startInspectingButton.style.backgroundColor = newState
-          ? "#ff0000"
-          : "#4e86ff";
+          // Debug print to check button state after toggle
+          console.log(
+            `Button clicked. New inspection state for tab ${currentTabId}:`,
+            newState
+          );
 
-        // Close the popup (optional)
-        window.close();
+          // Close the popup (optional)
+          window.close();
+        });
       });
     });
   });
+
+  // Listen for updates from the content script
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === "updateState") {
+      const { isInspecting } = message;
+      updateButtonState(startInspectingButton, isInspecting);
+      console.log("Received state update from content script:", isInspecting);
+    }
+  });
+
+  chrome.storage.local.get(null, (data) => {
+    console.log("All stored data:", data);
+  });
+
+  // Function to update the button text and color
+  function updateButtonState(button, isInspecting) {
+    button.textContent = isInspecting ? "Stop Inspecting" : "Start Inspecting";
+    button.style.backgroundColor = isInspecting ? "#ff0000" : "#4e86ff";
+
+    // Debug print to confirm button state visually
+    console.log(
+      `Button updated: text="${button.textContent}", backgroundColor="${button.style.backgroundColor}"`
+    );
+  }
 });
 
 // Properties tab options

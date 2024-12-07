@@ -294,6 +294,13 @@
       // Stop the inspection
       isActive = false;
 
+      // Update state in Chrome storage
+      chrome.storage.local.set({ isActive }, () => {});
+
+      chrome.storage.local.get("isActive", (data) => {
+        console.log("Get Inspection state from content:", data);
+      });
+
       // Remove event listeners
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("click", handleClick, true);
@@ -313,12 +320,6 @@
       const popup = document.getElementById("pathfinder-popup");
       popup.style.display = "none";
     });
-  }
-
-  // Function to hide the popup
-  function hidePopup() {
-    const popup = document.getElementById("pathfinder-popup");
-    popup.style.display = "none";
   }
 
   // Event Handlers
@@ -371,6 +372,13 @@
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "toggle") {
       isActive = !isActive;
+
+      // Save the state in Chrome's storage
+      chrome.storage.local.set({ isActive }, () => {
+        console.log("Extension state saved:", isActive);
+      });
+
+     
 
       if (isActive) {
         if (!breadcrumbTrail) {
